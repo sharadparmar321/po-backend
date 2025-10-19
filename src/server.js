@@ -3,6 +3,27 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 
+// Web API polyfills for Node 16 (needed by googleapis/gaxios)
+try {
+  const { fetch, Headers, Request, Response, FormData, File, Blob } = require('undici');
+  if (typeof global.fetch === 'undefined') global.fetch = fetch;
+  if (typeof global.Headers === 'undefined') global.Headers = Headers;
+  if (typeof global.Request === 'undefined') global.Request = Request;
+  if (typeof global.Response === 'undefined') global.Response = Response;
+  if (typeof global.FormData === 'undefined') global.FormData = FormData;
+  if (typeof global.File === 'undefined') global.File = File;
+  if (typeof global.Blob === 'undefined') global.Blob = Blob;
+} catch (e) {
+  // Ignore if undici is unavailable; deployment should include it
+}
+
+try {
+  const { ReadableStream } = require('stream/web');
+  if (typeof global.ReadableStream === 'undefined') global.ReadableStream = ReadableStream;
+} catch (e) {
+  // Older Node versions without stream/web
+}
+
 const db = require("./models");
 const purchaseOrderRouter = require("./routes/purchaseOrderRouter");
 
