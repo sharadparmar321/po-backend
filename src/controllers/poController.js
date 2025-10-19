@@ -123,12 +123,13 @@ if (typeof Blob === 'undefined') {
     stream() {
       // Return a simple readable stream
       const { Readable } = require('stream');
+      const blobInstance = this;
       return new Readable({
         read() {
-          const data = this._toString();
+          const data = blobInstance._toString();
           this.push(data);
           this.push(null);
-        }.bind(this)
+        }
       });
     }
     
