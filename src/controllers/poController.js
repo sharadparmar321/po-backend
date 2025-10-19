@@ -54,6 +54,118 @@ if (typeof Headers === 'undefined') {
   };
 }
 
+// Polyfill for Blob in Node.js environment
+if (typeof Blob === 'undefined') {
+  global.Blob = class Blob {
+    constructor(parts = [], options = {}) {
+      this._parts = Array.isArray(parts) ? parts : [parts];
+      this._type = options.type || '';
+      this._size = 0;
+      
+      // Calculate size
+      for (const part of this._parts) {
+        if (typeof part === 'string') {
+          this._size += Buffer.byteLength(part, 'utf8');
+        } else if (Buffer.isBuffer(part)) {
+          this._size += part.length;
+        } else if (part instanceof ArrayBuffer) {
+          this._size += part.byteLength;
+        } else if (part instanceof Uint8Array) {
+          this._size += part.length;
+        }
+      }
+    }
+    
+    get type() {
+      return this._type;
+    }
+    
+    get size() {
+      return this._size;
+    }
+    
+    slice(start = 0, end = this._size, contentType = '') {
+      const slicedParts = [];
+      let currentPos = 0;
+      
+      for (const part of this._parts) {
+        if (currentPos >= end) break;
+        
+        const partStart = Math.max(0, start - currentPos);
+        const partEnd = Math.min(part.length || part.byteLength || 0, end - currentPos);
+        
+        if (partStart < partEnd) {
+          if (typeof part === 'string') {
+            slicedParts.push(part.slice(partStart, partEnd));
+          } else if (Buffer.isBuffer(part)) {
+            slicedParts.push(part.slice(partStart, partEnd));
+          } else if (part instanceof ArrayBuffer) {
+            slicedParts.push(part.slice(partStart, partEnd));
+          } else if (part instanceof Uint8Array) {
+            slicedParts.push(part.slice(partStart, partEnd));
+          }
+        }
+        
+        currentPos += part.length || part.byteLength || 0;
+      }
+      
+      return new Blob(slicedParts, { type: contentType });
+    }
+    
+    arrayBuffer() {
+      return Promise.resolve(this._toArrayBuffer());
+    }
+    
+    text() {
+      return Promise.resolve(this._toString());
+    }
+    
+    stream() {
+      // Return a simple readable stream
+      const { Readable } = require('stream');
+      return new Readable({
+        read() {
+          const data = this._toString();
+          this.push(data);
+          this.push(null);
+        }.bind(this)
+      });
+    }
+    
+    _toArrayBuffer() {
+      const buffers = [];
+      for (const part of this._parts) {
+        if (typeof part === 'string') {
+          buffers.push(Buffer.from(part, 'utf8'));
+        } else if (Buffer.isBuffer(part)) {
+          buffers.push(part);
+        } else if (part instanceof ArrayBuffer) {
+          buffers.push(Buffer.from(part));
+        } else if (part instanceof Uint8Array) {
+          buffers.push(Buffer.from(part));
+        }
+      }
+      return Buffer.concat(buffers).buffer;
+    }
+    
+    _toString() {
+      let result = '';
+      for (const part of this._parts) {
+        if (typeof part === 'string') {
+          result += part;
+        } else if (Buffer.isBuffer(part)) {
+          result += part.toString('utf8');
+        } else if (part instanceof ArrayBuffer) {
+          result += Buffer.from(part).toString('utf8');
+        } else if (part instanceof Uint8Array) {
+          result += Buffer.from(part).toString('utf8');
+        }
+      }
+      return result;
+    }
+  };
+}
+
 const createPurchaseOrder = asyncHandler(async (req, res) => {
   try {
     const { company, vendor, orderInfo, lineItems, subTotal, taxRate, taxAmount, total } = req.body;
