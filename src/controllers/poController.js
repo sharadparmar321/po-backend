@@ -2,6 +2,11 @@ const asyncHandler = require("express-async-handler");
 const { PurchaseOrder, LineItem } = require("../models");
 const { google } = require("googleapis");
 
+// Polyfill for FormData in Node.js environment (required by googleapis/gaxios on Node <18)
+if (typeof FormData === 'undefined') {
+  global.FormData = require('form-data');
+}
+
 // Polyfill for Headers in Node.js environment
 if (typeof Headers === 'undefined') {
   global.Headers = class Headers {
