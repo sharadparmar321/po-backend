@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: po-only-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    branch: main
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: po-only-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://your-frontend-domain.onrender.com,http://localhost:3000
+      - key: GOOGLE_CREDENTIALS
+        value: ${GOOGLE_CREDENTIALS}
+      - key: GOOGLE_SHEET_ID
+        value: ${GOOGLE_SHEET_ID}
+    autoDeploy: true
