@@ -2,6 +2,58 @@ const asyncHandler = require("express-async-handler");
 const { PurchaseOrder, LineItem } = require("../models");
 const { google } = require("googleapis");
 
+// Polyfill for Headers in Node.js environment
+if (typeof Headers === 'undefined') {
+  global.Headers = class Headers {
+    constructor(init) {
+      this._headers = new Map();
+      if (init) {
+        if (Array.isArray(init)) {
+          init.forEach(([key, value]) => this.set(key, value));
+        } else if (typeof init === 'object') {
+          Object.entries(init).forEach(([key, value]) => this.set(key, value));
+        }
+      }
+    }
+    
+    get(name) {
+      return this._headers.get(name.toLowerCase());
+    }
+    
+    set(name, value) {
+      this._headers.set(name.toLowerCase(), value);
+    }
+    
+    has(name) {
+      return this._headers.has(name.toLowerCase());
+    }
+    
+    delete(name) {
+      return this._headers.delete(name.toLowerCase());
+    }
+    
+    forEach(callback) {
+      this._headers.forEach(callback);
+    }
+    
+    entries() {
+      return this._headers.entries();
+    }
+    
+    keys() {
+      return this._headers.keys();
+    }
+    
+    values() {
+      return this._headers.values();
+    }
+    
+    [Symbol.iterator]() {
+      return this._headers[Symbol.iterator]();
+    }
+  };
+}
+
 const createPurchaseOrder = asyncHandler(async (req, res) => {
   try {
     const { company, vendor, orderInfo, lineItems, subTotal, taxRate, taxAmount, total } = req.body;
