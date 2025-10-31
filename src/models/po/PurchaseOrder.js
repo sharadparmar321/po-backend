@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       company_address: DataTypes.TEXT,
       company_city_state_zip: DataTypes.STRING,
       company_country: DataTypes.STRING,
+      company_contact: DataTypes.STRING,
 
       vendor_name: DataTypes.STRING,
       vendor_address: DataTypes.TEXT,
@@ -41,6 +42,11 @@ module.exports = (sequelize, DataTypes) => {
       tax_rate: DataTypes.DECIMAL(5, 2),
       tax_amount: DataTypes.DECIMAL(12, 2),
       total: DataTypes.DECIMAL(12, 2),
+      unique_id: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
     },
     {
       sequelize,

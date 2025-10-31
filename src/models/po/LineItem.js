@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       quantity: DataTypes.INTEGER,
       rate: DataTypes.DECIMAL(12, 2),
       amount: DataTypes.DECIMAL(12, 2),
+      gst: DataTypes.DECIMAL(5, 2), // NEW FIELD
     },
     {
       sequelize,
